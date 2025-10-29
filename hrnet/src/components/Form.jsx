@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Liste des états américains
+// Liste des états américains (comme une base de données)
 const states = [
   { name: "Alabama", abbreviation: "AL" },
   { name: "Alaska", abbreviation: "AK" },
@@ -54,10 +54,15 @@ const states = [
   { name: "Wyoming", abbreviation: "WY" }
 ];
 
+// Composant Form
+// formData = les données du formulaire (vient de Home)
+// onChange = fonction appelée quand on tape dans un champ
+// onSubmit = fonction appelée quand on clique sur Save
 const Form = ({ formData, onChange, onSubmit }) => {
   return (
     <form id="create-employee" onSubmit={onSubmit}>
       
+      {/* Champ Prénom */}
       <div>
         <label htmlFor="first-name">First Name</label>
         <input 
@@ -70,6 +75,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
         />
       </div>
 
+      {/* Champ Nom */}
       <div>
         <label htmlFor="last-name">Last Name</label>
         <input 
@@ -82,6 +88,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
         />
       </div>
 
+      {/* Champ Date de naissance */}
       <div>
         <label htmlFor="date-of-birth">Date of Birth</label>
         <input 
@@ -94,6 +101,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
         />
       </div>
 
+      {/* Champ Date de début */}
       <div>
         <label htmlFor="start-date">Start Date</label>
         <input 
@@ -106,9 +114,11 @@ const Form = ({ formData, onChange, onSubmit }) => {
         />
       </div>
 
+      {/* Section Adresse (regroupée dans un fieldset) */}
       <fieldset className="address">
         <legend>Address</legend>
 
+        {/* Champ Rue */}
         <div>
           <label htmlFor="street">Street</label>
           <input 
@@ -121,6 +131,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
           />
         </div>
 
+        {/* Champ Ville */}
         <div>
           <label htmlFor="city">City</label>
           <input 
@@ -133,6 +144,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
           />
         </div>
 
+        {/* Liste déroulante des États */}
         <div>
           <label htmlFor="state">State</label>
           <select 
@@ -143,6 +155,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
             required
           >
             <option value="">Select a state</option>
+            {/* On crée une option pour chaque état */}
             {states.map(function(state) {
               return (
                 <option key={state.abbreviation} value={state.abbreviation}>
@@ -153,6 +166,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
           </select>
         </div>
 
+        {/* Champ Code postal */}
         <div>
           <label htmlFor="zip-code">Zip Code</label>
           <input 
@@ -166,6 +180,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
         </div>
       </fieldset>
 
+      {/* Liste déroulante des Départements */}
       <div>
         <label htmlFor="department">Department</label>
         <select 
@@ -183,6 +198,7 @@ const Form = ({ formData, onChange, onSubmit }) => {
         </select>
       </div>
 
+      {/* Bouton pour sauvegarder */}
       <button type="submit">Save</button>
     </form>
   );

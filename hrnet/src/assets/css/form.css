@@ -1,0 +1,107 @@
+/* Form.css - Formulaire de création d'employé */
+
+#create-employee {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#create-employee > div,
+#create-employee fieldset {
+  display: flex;
+  flex-direction: column;
+}
+
+#create-employee label {
+  color: #2d5016;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+#create-employee input,
+#create-employee select {
+  padding: 12px 15px;
+  border: 2px solid #c5e1a5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #2d5016;
+}
+
+#create-employee input:focus,
+#create-employee select:focus {
+  outline: none;
+  border-color: #6ba83e;
+  box-shadow: 0 0 0 3px rgba(107, 168, 62, 0.1);
+  background-color: #f9fdf7;
+}
+
+#create-employee input:hover,
+#create-employee select:hover {
+  border-color: #8bc34a;
+}
+
+/* Fieldset pour l'adresse */
+.address {
+  border: 2px solid #c5e1a5;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f9fdf7;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.address legend {
+  color: #4a7c2c;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0 10px;
+}
+
+.address > div {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bouton Save */
+#create-employee button[type="submit"] {
+  background: linear-gradient(135deg, #6ba83e 0%, #4a7c2c 100%);
+  color: #ffffff;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(74, 124, 44, 0.3);
+}
+
+#create-employee button[type="submit"]:hover {
+  background: linear-gradient(135deg, #7bc04e 0%, #5a8c3c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(74, 124, 44, 0.4);
+}
+
+#create-employee button[type="submit"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(74, 124, 44, 0.3);
+}
+
+/* Style pour les champs requis */
+#create-employee input:required,
+#create-employee select:required {
+  border-left: 4px solid #6ba83e;
+}
+
+/* Style pour les champs invalides */
+#create-employee input:invalid:not(:placeholder-shown),
+#create-employee select:invalid:not(:placeholder-shown) {
+  border-color: #d32f2f;
+}

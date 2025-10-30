@@ -1,20 +1,22 @@
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import Home from './pages/Home';
-import EmployeeList from './pages/Employeelist';
+import EmployeeList from './pages/EmployeeList';
+import NotFound from './pages/NotFound';
 
 function App() {
- 
   return (
-    <Router>
-      <Routes>
-        {/* Route pour la page d'accueil */}
-        <Route path="/" element={<Home />} />
-        
-        {/* Route pour la liste des employés */}
-        <Route path="/employee-list" element={<EmployeeList />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/employee-list" element={<EmployeeList />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
+
 export default App;

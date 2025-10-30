@@ -1,11 +1,8 @@
-// On importe React et useState (pour gérer les données qui changent)
 import React, { useState } from 'react';
-import Modal from '../components/Modal';
+import Modal from '@lapauze/react-green-modal';
 import EmployeeForm from '../components/Form';
 
 function Home() {
-  // formData = les données du formulaire
-  // setFormData = fonction pour modifier formData
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,57 +15,82 @@ function Home() {
     department: 'Sales'
   });
 
-  // isModalOpen = true ou false (modal ouvert ou fermé)
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
-  // Quand on tape dans un champ du formulaire
   function handleChange(event) {
     const nom = event.target.name;
     const valeur = event.target.value;
     
-    // On met à jour formData
     setFormData({
-      ...formData,        // On garde tout ce qui existe déjà
-      [nom]: valeur       // On change juste le champ modifié
+      ...formData,
+      [nom]: valeur
     });
   }
 
-  // Quand on clique sur "Save"
   function handleSubmit(event) {
-    event.preventDefault(); // Empêche la page de se recharger
+    event.preventDefault();
     
-    // 1. On récupère les employés déjà sauvegardés
-    const ancienEmployes = JSON.parse(localStorage.getItem('employees')) || [];
-    
-    // 2. On ajoute le nouvel employé
-    ancienEmployes.push(formData);
-    
-    // 3. On sauvegarde tout dans le navigateur
-    localStorage.setItem('employees', JSON.stringify(ancienEmployes));
-    
-    // 4. On ouvre le modal de confirmation
-    setIsModalOpen(true);
-    
-    // 5. On vide le formulaire
-    setFormData({
-      firstName: '',
-      lastName: '',
-      dateOfBirth: '',
-      startDate: '',
-      street: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      department: 'Sales'
-    });
+    try {
+      // 1. Charger les employés existants avec gestion d'erreur
+      let ancienEmployes = [];
+      const saved = localStorage.getItem('employees');
+      
+      if (saved) {
+        try {
+          ancienEmployes = JSON.parse(saved);
+          
+          // Vérifier que c'est bien un array
+          if (!Array.isArray(ancienEmployes)) {
+            console.warn('Existing data is not an array, starting fresh');
+            ancienEmployes = [];
+          }
+        } catch (parseError) {
+          console.error('Error parsing existing data:', parseError);
+          // Si les données sont corrompues, on recommence à zéro
+          ancienEmployes = [];
+        }
+      }
+      
+      // 2. Ajouter le nouvel employé
+      ancienEmployes.push(formData);
+      
+      // 3. Sauvegarder dans localStorage
+      localStorage.setItem('employees', JSON.stringify(ancienEmployes));
+      
+      // 4. Succès - ouvrir le modal
+      setIsModalOpen(true);
+      setSaveError(null);
+      
+      // 5. Réinitialiser le formulaire
+      setFormData({
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
+        startDate: '',
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        department: 'Sales'
+      });
+      
+    } catch (error) {
+      console.error('Error saving employee:', error);
+      
+      // Vérifier si c'est une erreur de quota dépassé
+      if (error.name === 'QuotaExceededError') {
+        setSaveError('Storage quota exceeded. Cannot save more employees. Please contact IT support.');
+      } else {
+        setSaveError('Error saving employee. Please try again.');
+      }
+    }
   }
 
-  // Quand on ferme le modal
   function closeModal() {
     setIsModalOpen(false);
   }
 
-  // Ce qu'on affiche à l'écran
   return (
     <div>
       {/* Titre de la page */}
@@ -83,6 +105,20 @@ function Home() {
         
         <h2>Create Employee</h2>
 
+        {/* Message d'erreur si la sauvegarde a échoué */}
+        {saveError && (
+          <div style={{
+            padding: '15px',
+            marginBottom: '20px',
+            backgroundColor: '#ffebee',
+            color: '#c62828',
+            borderRadius: '5px',
+            border: '1px solid #ef5350'
+          }}>
+            <strong>Error:</strong> {saveError}
+          </div>
+        )}
+
         {/* Le formulaire */}
         <EmployeeForm 
           formData={formData}
@@ -91,7 +127,7 @@ function Home() {
         />
       </div>
 
-      {/* Le modal qui s'affiche après la sauvegarde */}
+      {/* Le modal qui s'affiche après la sauvegarde réussie */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={closeModal} 

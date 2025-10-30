@@ -1,4 +1,3 @@
-// On importe React et les outils dont on a besoin
 import React, { useState, useEffect } from 'react';
 import {
   useReactTable,
@@ -8,34 +7,65 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import TableControls from '../components/TableControls';
+import TablePagination from '../components/TablePagination';
 
 function EmployeeList() {
-  // employees = liste de tous les employés
   const [employees, setEmployees] = useState([]);
-  
-  // globalFilter = ce qu'on tape dans la barre de recherche
   const [globalFilter, setGlobalFilter] = useState('');
-  
-  // sorting = comment le tableau est trié (ordre croissant/décroissant)
   const [sorting, setSorting] = useState([]);
+  const [loadError, setLoadError] = useState(null);
 
-  // useEffect = code qui s'exécute quand la page se charge
+  // Chargement des données avec gestion d'erreurs complète
   useEffect(function() {
-    // On récupère les employés sauvegardés dans le navigateur
-    const savedEmployees = localStorage.getItem('employees');
-    
-    if (savedEmployees) {
-      // On transforme le texte en données utilisables
+    try {
+      const savedEmployees = localStorage.getItem('employees');
+      
+      // Si pas de données, ce n'est pas une erreur
+      if (!savedEmployees) {
+        console.log('Aucun employé trouvé dans localStorage');
+        setEmployees([]);
+        setLoadError(null);
+        return;
+      }
+      
+      // Parser le JSON
       const parsedEmployees = JSON.parse(savedEmployees);
-      console.log('Employés chargés:', parsedEmployees);
+      
+      // Validation : vérifier que c'est un array
+      if (!Array.isArray(parsedEmployees)) {
+        throw new Error('Data is not an array');
+      }
+      
+      // Validation : vérifier que chaque employé a les propriétés requises
+      const isValid = parsedEmployees.every(function(emp) {
+        return emp.firstName && emp.lastName && emp.department;
+      });
+      
+      if (!isValid) {
+        throw new Error('Some employees have missing required properties');
+      }
+      
+      // Tout est bon, on charge les données
+      console.log('Employés chargés avec succès:', parsedEmployees.length);
       setEmployees(parsedEmployees);
-    } else {
-      console.log('Aucun employé trouvé');
+      setLoadError(null);
+      
+    } catch (error) {
+      console.error('Erreur lors du chargement des employés:', error);
+      
+      // Sauvegarder le message d'erreur pour l'afficher
+      setLoadError(error.message);
+      
+      // Réinitialiser avec un array vide pour que l'application continue
+      setEmployees([]);
+      
+      // Nettoyer localStorage pour éviter que l'erreur se reproduise
+      localStorage.removeItem('employees');
     }
-  }, []); // [] = exécuter une seule fois au chargement
+  }, []);
 
-  // columns = définition des colonnes du tableau
-  // useMemo = créer les colonnes une seule fois (optimisation)
+  // Définition des colonnes
   const columns = React.useMemo(
     function() {
       return [
@@ -53,99 +83,78 @@ function EmployeeList() {
     []
   );
 
-  // Configuration du tableau avec toutes ses fonctionnalités
+  // Configuration du tableau
   const table = useReactTable({
-    data: employees,              // Les données à afficher
-    columns: columns,             // Les colonnes du tableau
+    data: employees,
+    columns: columns,
     state: {
-      globalFilter: globalFilter, // État de la recherche
-      sorting: sorting,           // État du tri
+      globalFilter: globalFilter,
+      sorting: sorting,
     },
-    onGlobalFilterChange: setGlobalFilter, // Fonction pour changer la recherche
-    onSortingChange: setSorting,           // Fonction pour changer le tri
-    globalFilterFn: 'includesString',      // Type de recherche (texte)
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
+    globalFilterFn: 'includesString',
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),     // Active la recherche
-    getSortedRowModel: getSortedRowModel(),         // Active le tri
-    getPaginationRowModel: getPaginationRowModel(), // Active la pagination
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
-        pageSize: 10, // 10 employés par page par défaut
+        pageSize: 10,
       },
     },
   });
 
-  // Ce qu'on affiche à l'écran
   return (
     <div id="employee-div" className="container">
       <h1>Current Employees</h1>
       
-      {/* Contrôles en haut : nombre d'entrées et recherche */}
-      <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
-        
-        {/* Sélecteur : combien d'employés afficher par page */}
-        <div>
-          <label>
-            Show{' '}
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={function(e) {
-                table.setPageSize(Number(e.target.value));
-              }}
-            >
-              {[10, 25, 50, 100].map(function(pageSize) {
-                return (
-                  <option key={pageSize} value={pageSize}>
-                    {pageSize}
-                  </option>
-                );
-              })}
-            </select>
-            {' '}entries
-          </label>
+      {/* Afficher le message d'erreur si le chargement a échoué */}
+      {loadError && (
+        <div style={{
+          padding: '15px',
+          marginBottom: '20px',
+          backgroundColor: '#ffebee',
+          color: '#c62828',
+          borderRadius: '5px',
+          border: '1px solid #ef5350'
+        }}>
+          <strong>Error loading data:</strong> {loadError}
+          <br />
+          <small>The corrupted data has been cleared. Starting with an empty employee list.</small>
         </div>
-        
-        {/* Champ de recherche */}
-        <div>
-          <label>
-            Search:{' '}
-            <input
-              type="text"
-              value={globalFilter || ''}
-              onChange={function(e) {
-                setGlobalFilter(e.target.value);
-              }}
-              placeholder="Search all columns..."
-            />
-          </label>
-        </div>
-      </div>
+      )}
       
-      {/* Le tableau */}
+      <TableControls 
+        pageSize={table.getState().pagination.pageSize}
+        onPageSizeChange={(size) => table.setPageSize(size)}
+        globalFilter={globalFilter || ''}
+        onGlobalFilterChange={setGlobalFilter}
+      />
+      
       <table>
-        {/* En-tête du tableau (titres des colonnes) */}
         <thead>
           {table.getHeaderGroups().map(function(headerGroup) {
             return (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map(function(header) {
+                  let sortClass = '';
+                  if (header.column.getIsSorted() === 'asc') {
+                    sortClass = 'sorted-asc';
+                  } else if (header.column.getIsSorted() === 'desc') {
+                    sortClass = 'sorted-desc';
+                  }
+                  
                   return (
                     <th 
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
-                      style={{ cursor: 'pointer' }}
+                      className={sortClass}
                     >
-                      {/* Affiche le titre de la colonne */}
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()
                       )}
-                      {/* Affiche la flèche de tri */}
-                      {header.column.getIsSorted()
-                        ? header.column.getIsSorted() === 'desc'
-                          ? ' 🔽'
-                          : ' 🔼'
-                        : ''}
                     </th>
                   );
                 })}
@@ -154,19 +163,18 @@ function EmployeeList() {
           })}
         </thead>
         
-        {/* Corps du tableau (lignes d'employés) */}
         <tbody>
-          {/* Si aucun employé, on affiche un message */}
           {table.getRowModel().rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} style={{ textAlign: 'center', padding: '20px' }}>
                 {globalFilter 
                   ? 'No matching employees found.' 
-                  : 'No employees found. Please create an employee first.'}
+                  : loadError 
+                    ? 'No employees available due to data error.'
+                    : 'No employees found. Please create an employee first.'}
               </td>
             </tr>
           ) : (
-            // Sinon, on affiche chaque employé
             table.getRowModel().rows.map(function(row) {
               return (
                 <tr key={row.id}>
@@ -187,47 +195,16 @@ function EmployeeList() {
         </tbody>
       </table>
       
-      {/* Contrôles en bas : info sur les résultats et pagination */}
-      <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        
-        {/* Texte : "Showing 1 to 10 of 50 entries" */}
-        <div>
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )}{' '}
-          of {table.getFilteredRowModel().rows.length} entries
-          {globalFilter && ` (filtered from ${employees.length} total entries)`}
-        </div>
-        
-        {/* Boutons Previous et Next */}
-        <div>
-          <button
-            onClick={function() {
-              table.previousPage();
-            }}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </button>
-          {' '}
-          <span>
-            {table.getState().pagination.pageIndex + 1}
-          </span>
-          {' '}
-          <button
-            onClick={function() {
-              table.nextPage();
-            }}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <TablePagination 
+        currentPage={table.getState().pagination.pageIndex}
+        pageSize={table.getState().pagination.pageSize}
+        totalItems={table.getFilteredRowModel().rows.length}
+        canPreviousPage={table.getCanPreviousPage()}
+        canNextPage={table.getCanNextPage()}
+        onPreviousPage={() => table.previousPage()}
+        onNextPage={() => table.nextPage()}
+      />
       
-      {/* Lien pour retourner à l'accueil */}
       <div style={{ marginTop: '20px' }}>
         <a href="/">Home</a>
       </div>

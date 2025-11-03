@@ -1,40 +1,33 @@
-.not-found-container {
+.not-found {
   text-align: center;
-  margin-top: 50px;
+  margin-top: 100px;
 }
 
-.not-found-title {
-  font-size: 72px;
+.not-found h1 {
+  font-size: 80px;
   color: #6ba83e;
-  margin-bottom: 20px;
 }
 
-.not-found-subtitle {
-  margin-bottom: 20px;
+.not-found h2 {
+  font-size: 30px;
+  margin: 20px 0;
 }
 
-.not-found-message {
+.not-found p {
   font-size: 18px;
-  color: #666;
-  margin-bottom: 30px;
+  margin: 20px 0;
 }
 
-.not-found-button-container {
-  margin-top: 30px;
-}
-
-.not-found-button {
-  padding: 12px 24px;
+.not-found a {
+  display: inline-block;
+  padding: 10px 20px;
   background-color: #6ba83e;
   color: white;
   text-decoration: none;
   border-radius: 5px;
-  display: inline-block;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background-color 0.3s;
+  margin-top: 20px;
 }
 
-.not-found-button:hover {
+.not-found a:hover {
   background-color: #5a9133;
 }

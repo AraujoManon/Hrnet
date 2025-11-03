@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import Modal from '@lapauze/react-green-modal';
 import EmployeeForm from '../components/Form';
+import { addEmployee, clearError } from '../store/employeeSlice';
 
 function Home() {
+  const dispatch = useDispatch();
+  const error = useSelector((state) => state.employees.error);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,15 +22,14 @@ function Home() {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [saveError, setSaveError] = useState(null);
 
   function handleChange(event) {
-    const nom = event.target.name;
-    const valeur = event.target.value;
+    const name = event.target.name;
+    const value = event.target.value;
     
     setFormData({
       ...formData,
-      [nom]: valeur
+      [name]: value
     });
   }
 
@@ -32,37 +37,13 @@ function Home() {
     event.preventDefault();
     
     try {
-      // 1. Charger les employés existants avec gestion d'erreur
-      let ancienEmployes = [];
-      const saved = localStorage.getItem('employees');
+      // Ajouter l'employé au store Redux
+      dispatch(addEmployee(formData));
       
-      if (saved) {
-        try {
-          ancienEmployes = JSON.parse(saved);
-          
-          // Vérifier que c'est bien un array
-          if (!Array.isArray(ancienEmployes)) {
-            console.warn('Existing data is not an array, starting fresh');
-            ancienEmployes = [];
-          }
-        } catch (parseError) {
-          console.error('Error parsing existing data:', parseError);
-          // Si les données sont corrompues, on recommence à zéro
-          ancienEmployes = [];
-        }
-      }
-      
-      // 2. Ajouter le nouvel employé
-      ancienEmployes.push(formData);
-      
-      // 3. Sauvegarder dans localStorage
-      localStorage.setItem('employees', JSON.stringify(ancienEmployes));
-      
-      // 4. Succès - ouvrir le modal
+      // Ouvrir le modal
       setIsModalOpen(true);
-      setSaveError(null);
       
-      // 5. Réinitialiser le formulaire
+      // Vider le formulaire
       setFormData({
         firstName: '',
         lastName: '',
@@ -75,51 +56,33 @@ function Home() {
         department: 'Sales'
       });
       
-    } catch (error) {
-      console.error('Error saving employee:', error);
-      
-      // Vérifier si c'est une erreur de quota dépassé
-      if (error.name === 'QuotaExceededError') {
-        setSaveError('Storage quota exceeded. Cannot save more employees. Please contact IT support.');
-      } else {
-        setSaveError('Error saving employee. Please try again.');
-      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
   function closeModal() {
     setIsModalOpen(false);
+    dispatch(clearError());
   }
 
   return (
     <div>
-      {/* Titre de la page */}
       <div className="title">
         <h1>HRnet</h1>
       </div>
 
-      {/* Contenu principal */}
       <div className="container">
-        {/* Lien vers la liste des employés */}
-        <a href="/employee-list">View Current Employees</a>
+        <Link to="/employee-list">View Current Employees</Link>
         
         <h2>Create Employee</h2>
 
-        {/* Message d'erreur si la sauvegarde a échoué */}
-        {saveError && (
-          <div style={{
-            padding: '15px',
-            marginBottom: '20px',
-            backgroundColor: '#ffebee',
-            color: '#c62828',
-            borderRadius: '5px',
-            border: '1px solid #ef5350'
-          }}>
-            <strong>Error:</strong> {saveError}
+        {error && (
+          <div className="error-box">
+            {error}
           </div>
         )}
 
-        {/* Le formulaire */}
         <EmployeeForm 
           formData={formData}
           onChange={handleChange}
@@ -127,7 +90,6 @@ function Home() {
         />
       </div>
 
-      {/* Le modal qui s'affiche après la sauvegarde réussie */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={closeModal} 

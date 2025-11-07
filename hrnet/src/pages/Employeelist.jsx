@@ -13,131 +13,122 @@ import TableControls from '../components/TableControls';
 import TablePagination from '../components/TablePagination';
 
 function EmployeeList() {
+  // Récupère la liste des employés depuis le store Redux
   const employees = useSelector((state) => state.employees.list);
-  const [globalFilter, setGlobalFilter] = useState('');
+  
+  // État pour stocker le texte de recherche
+  const [searchText, setSearchText] = useState('');
+  
+  // État pour stocker le tri des colonnes (quelle colonne, asc/desc)
   const [sorting, setSorting] = useState([]);
 
-  const columns = React.useMemo(
-    function() {
-      return [
-        { header: 'First Name', accessorKey: 'firstName' },
-        { header: 'Last Name', accessorKey: 'lastName' },
-        { header: 'Start Date', accessorKey: 'startDate' },
-        { header: 'Department', accessorKey: 'department' },
-        { header: 'Date of Birth', accessorKey: 'dateOfBirth' },
-        { header: 'Street', accessorKey: 'street' },
-        { header: 'City', accessorKey: 'city' },
-        { header: 'State', accessorKey: 'state' },
-        { header: 'Zip Code', accessorKey: 'zipCode' },
-      ];
-    },
-    []
-  );
+  // Définition des colonnes du tableau
+  // Chaque colonne a un titre (header) et une clé (accessorKey)
+  const columns = [
+    { header: 'Prénom', accessorKey: 'firstName' },
+    { header: 'Nom', accessorKey: 'lastName' },
+    { header: 'Date début', accessorKey: 'startDate' },
+    { header: 'Département', accessorKey: 'department' },
+    { header: 'Date naissance', accessorKey: 'dateOfBirth' },
+    { header: 'Rue', accessorKey: 'street' },
+    { header: 'Ville', accessorKey: 'city' },
+    { header: 'État', accessorKey: 'state' },
+    { header: 'Code postal', accessorKey: 'zipCode' },
+  ];
 
+  // Configuration du tableau avec TanStack Table
   const table = useReactTable({
     data: employees,
     columns: columns,
     state: {
-      globalFilter: globalFilter,
+      globalFilter: searchText,
       sorting: sorting,
     },
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setSearchText,
     onSortingChange: setSorting,
-    globalFilterFn: 'includesString',
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
-      pagination: {
-        pageSize: 10,
-      },
+      pagination: { pageSize: 10 },
     },
   });
 
   return (
     <div id="employee-div" className="container">
-      <h1>Current Employees</h1>
+      <h1>Liste des Employés</h1>
       
+      {/* Composant pour les contrôles (recherche + nombre d'entrées) */}
       <TableControls 
         pageSize={table.getState().pagination.pageSize}
         onPageSizeChange={(size) => table.setPageSize(size)}
-        globalFilter={globalFilter || ''}
-        onGlobalFilterChange={setGlobalFilter}
+        searchText={searchText}
+        onSearchChange={setSearchText}
       />
       
+      {/* Le tableau HTML */}
       <table>
+        {/* En-tête du tableau */}
         <thead>
-          {table.getHeaderGroups().map(function(headerGroup) {
-            return (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(function(header) {
-                  let sortClass = '';
-                  if (header.column.getIsSorted() === 'asc') {
-                    sortClass = 'sorted-asc';
-                  } else if (header.column.getIsSorted() === 'desc') {
-                    sortClass = 'sorted-desc';
-                  }
-                  
-                  return (
-                    <th 
-                      key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      className={sortClass}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            );
-          })}
+          {/* Boucle sur les groupes d'en-têtes */}
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {/* Boucle sur chaque colonne */}
+              {headerGroup.headers.map((header) => {
+                // Détermine la classe CSS selon le tri
+                let sortClass = '';
+                if (header.column.getIsSorted() === 'asc') {
+                  sortClass = 'sorted-asc';
+                } else if (header.column.getIsSorted() === 'desc') {
+                  sortClass = 'sorted-desc';
+                }
+                
+                return (
+                  <th 
+                    key={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
+                    className={sortClass}
+                  >
+                    {/* Affiche le nom de la colonne */}
+                    {header.column.columnDef.header}
+                  </th>
+                );
+              })}
+            </tr>
+          ))}
         </thead>
         
+        {/* Corps du tableau */}
         <tbody>
-          {table.getRowModel().rows.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length} style={{ textAlign: 'center', padding: '20px' }}>
-                {globalFilter 
-                  ? 'No matching employees found.' 
-                  : 'No employees found. Please create an employee first.'}
-              </td>
+          {/* Boucle sur chaque ligne (employé) */}
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {/* Boucle sur chaque cellule de la ligne */}
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id}>
+                  {/* Affiche le contenu de la cellule */}
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
             </tr>
-          ) : (
-            table.getRowModel().rows.map(function(row) {
-              return (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map(function(cell) {
-                    return (
-                      <td key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })
-          )}
+          ))}
         </tbody>
       </table>
       
+      {/* Composant pour la pagination */}
       <TablePagination 
         currentPage={table.getState().pagination.pageIndex}
-        pageSize={table.getState().pagination.pageSize}
+        totalPages={table.getPageCount()}
         totalItems={table.getFilteredRowModel().rows.length}
-        canPreviousPage={table.getCanPreviousPage()}
-        canNextPage={table.getCanNextPage()}
-        onPreviousPage={() => table.previousPage()}
-        onNextPage={() => table.nextPage()}
+        canPrevious={table.getCanPreviousPage()}
+        canNext={table.getCanNextPage()}
+        onPrevious={() => table.previousPage()}
+        onNext={() => table.nextPage()}
       />
       
-      <div style={{ marginTop: '20px' }}>
+      {/* Lien pour retourner à l'accueil */}
+      <div>
         <Link to="/">Home</Link>
       </div>
     </div>

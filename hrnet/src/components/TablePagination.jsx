@@ -1,57 +1,42 @@
 import React from 'react';
 
-// Composant pour la pagination en bas du tableau
-// currentPage = page actuelle (commence à 0)
-// pageSize = nombre d'employés par page
-// totalItems = nombre total d'employés (après recherche)
-// canPreviousPage = peut-on aller à la page précédente ?
-// canNextPage = peut-on aller à la page suivante ?
-// onPreviousPage = fonction pour aller à la page précédente
-// onNextPage = fonction pour aller à la page suivante
+// Composant pour afficher la pagination du tableau
+// (boutons précédent/suivant + infos page)
 function TablePagination({ 
-  currentPage, 
-  pageSize, 
-  totalItems, 
-  canPreviousPage, 
-  canNextPage, 
-  onPreviousPage, 
-  onNextPage 
+  currentPage,    // Numéro de la page actuelle (commence à 0)
+  totalPages,     // Nombre total de pages
+  totalItems,     // Nombre total d'employés
+  canPrevious,    // Peut-on aller à la page précédente ?
+  canNext,        // Peut-on aller à la page suivante ?
+  onPrevious,     // Fonction pour aller à la page précédente
+  onNext          // Fonction pour aller à la page suivante
 }) {
-  // Calcul du premier employé affiché (ex: 1, 11, 21...)
-  const startItem = currentPage * pageSize + 1;
-  
-  // Calcul du dernier employé affiché (ex: 10, 20, 30...)
-  const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
-  
   return (
-    <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      
-      {/* Partie gauche : Texte informatif "Showing 1 to 10 of 50 entries" */}
-      <div>
-        Showing {startItem} to {endItem} of {totalItems} entries
+    <div className="table-pagination">
+      {/* Nombre total d'employés trouvés */}
+      <div className="table-pagination-info">
+        Affichage de {totalItems} employés
       </div>
       
-      {/* Partie droite : Boutons de navigation */}
-      <div>
-        {/* Bouton Previous */}
-        <button
-          onClick={onPreviousPage}
-          disabled={!canPreviousPage}  // Désactivé si on est sur la première page
+      {/* Boutons de navigation */}
+      <div className="table-pagination-controls">
+        {/* Bouton page précédente */}
+        <button 
+          onClick={onPrevious} 
+          disabled={!canPrevious}
         >
-          Previous
+          Précédent
         </button>
-        {' '}
-        {/* Numéro de la page actuelle (on ajoute +1 car ça commence à 0) */}
-        <span>
-          {currentPage + 1}
-        </span>
-        {' '}
-        {/* Bouton Next */}
-        <button
-          onClick={onNextPage}
-          disabled={!canNextPage}  // Désactivé si on est sur la dernière page
+        
+        {/* Affichage de la page actuelle */}
+        <span>Page {currentPage + 1} sur {totalPages}</span>
+        
+        {/* Bouton page suivante */}
+        <button 
+          onClick={onNext} 
+          disabled={!canNext}
         >
-          Next
+          Suivant
         </button>
       </div>
     </div>

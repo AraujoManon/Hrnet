@@ -1,5 +1,3 @@
-/* Form.css - Formulaire de création d'employé */
-
 #create-employee {
   display: flex;
   flex-direction: column;

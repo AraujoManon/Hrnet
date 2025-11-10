@@ -1,8 +1,18 @@
 {
+  
   "name": "hrnet",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Application de gestion des employés RH avec React et Redux",
+  "author": {
+    "name": "Araujo Manon",
+    "email": "araujo.manon@laposte.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AraujoManon/Hrnet.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
